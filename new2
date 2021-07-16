@@ -1,0 +1,58 @@
+What is Prometheus?
+
+Prometheus is an open-source systems monitoring and alerting toolkit originally built at SoundCloud. It is now a standalone open source project and maintained independently of any company.
+
+Features:
+
+Prometheus's main features are:
+
+1- a multi-dimensional data model with time series data identified by metric name and key/value pairs
+2- PromQL, a flexible query language to leverage this dimensionality
+3- no reliance on distributed storage; single server nodes are autonomous
+4- time series collection happens via a pull model over HTTP
+5- pushing time series is supported via an intermediary gateway
+6- targets are discovered via service discovery or static configuration
+7- multiple modes of graphing and dashboarding support
+
+
+What is Grafana?
+
+Grafana is open source visualization and analytics software. It allows you to query, visualize, alert on, and explore your metrics no matter where they are stored. In plain English, it provides you with tools to turn your time-series database (TSDB) data into beautiful graphs and visualizations.
+
+Features:
+Grafana’s main features are:
+
+1- One of the key features in Grafana, templating allows you to create dashboards that can be reused for lots of different use cases. Values aren’t hard-coded with these templates, so for instance, if you have a production server and a test server, you can use the same dashboard for both.
+2- If you’re using Grafana alerting, you can have alerts sent through a number of different notifiers, including PagerDuty, SMS, email, or Slack.
+3- Grafana supports different authentication styles, such as LDAP and OAuth, and allows you to map users to organizations.
+
+Prometheus and Grafana Integration:
+
+Prometheus scraps metrics exposed by node exporter periodically(configured on prometheus server) and stores the same on timeseries database. In our case this data store is
+Thanos. Thanos provides a global query view, high availability, data backup with historical, cheap data access as its core features in a single binary.
+This timeseries data store can be queries using query language provided by prometheus called PromQL. PromQL queries can be used to create dashboards in grafana.
+
+Current Vault Monitoring Setup:
+There are two aspects of monitoring Vault cluster firstly the monitoring the nodes hosting the vault application and secondly monitoring vault application.
+
+1- Monitoring Vault nodes:
+ Firstly the node/server resource utilisation i.e. Compute/Network/Storage etc. need to be monitored. 
+
+2- Monitoring Vault application:
+ The Vault server process collects various runtime metrics about the performance of different libraries and subsystems. These metrics are aggregated on a ten second interval and are retained for one minute in-memory.
+ Vault telemetry need to be enabled at vault configuration, below are some of the flags which need to be configured. 
+
+ a- prometheus_retention_time (string: "24h") - Specifies the amount of time that Prometheus metrics are retained in memory. Setting this to 0 will disable Prometheus telemetry.
+ b- disable_hostname (bool: false) - It is recommended to also enable the option disable_hostname to avoid having prefixed metrics with hostname.
+
+ example telemetry config:
+	 telemetry {
+	  prometheus_retention_time = "30s"
+	  disable_hostname = true
+	}
+
+
+ Note: The /v1/sys/metrics endpoint is only accessible on active nodes and automatically disabled on standby nodes. You can enable the /v1/sys/metrics endpoint on standby nodes by enabling unauthenticated metrics access.
+
+
+
